@@ -1,16 +1,27 @@
 @import compass/css3.scss
+@import 'https://fonts.googleapis.com/css?family=Jura'
 
-$font-stack: "Lucida Grande", Helvetica, Arial, sans-serif
+$font-stack: 'Jura', sans-serif
+
 $primary-colour: green
 $secondary-colour: black
-$tertiary-colour: greenyellow
+$tertiary-colour: limegreen
 
 body
   padding: 50px
-  font: 100% $font-stack
+  font-family: $font-stack
+  font-weight: bold
+  text-align: center
   color: $primary-colour
   background-color: $secondary-colour
 
 a
   color: $tertiary-colour
-  font-weight: bold
+
+canvas
+  margin: 0 auto
+  padding: 0
+  display: block
+  border-style: solid
+  border-width: 2px
+  border-color: $primary-colour
