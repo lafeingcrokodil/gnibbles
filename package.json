@@ -2,6 +2,10 @@
   "name": "gnibbles",
   "version": "0.0.1",
   "description": "Snake game based on GNOME Nibbles",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lafeingcrokodil/gnibbles.git"
+  },
   "keywords": [
     "nibbles",
     "gnome",
