@@ -1,0 +1,22 @@
+@import 'https://fonts.googleapis.com/css?family=Jura';
+body {
+  padding: 50px;
+  font-family: "Jura", sans-serif;
+  font-weight: bold;
+  text-align: center;
+  color: green;
+  background-color: black;
+}
+
+a {
+  color: limegreen;
+}
+
+canvas {
+  margin: 0 auto;
+  padding: 0;
+  display: none;
+  border-style: solid;
+  border-width: 2px;
+  border-color: green;
+}
