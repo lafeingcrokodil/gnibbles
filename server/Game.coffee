@@ -8,7 +8,8 @@ class Game
 
   players: []
 
-  delay: 50 # players move every 500 milliseconds
+  initialLength: 5
+  delay: 50 # number of milliseconds between moves
 
   constructor: (@io) ->
     @level = new Level
@@ -21,6 +22,9 @@ class Game
       debug "#{name} joined."
       newPlayer = { name, socket, segments: [] }
       @occupy newPlayer
+      [row, col] = newPlayer.segments[0]
+      while newPlayer.segments.length < @initialLength
+        newPlayer.segments.push [row, col]
       @players.push newPlayer
       socket.emit 'level', @level.getSnapshot()
       socket.on 'key', @onKey(newPlayer)
@@ -64,11 +68,13 @@ class Game
       when 'RIGHT' then { row: oldRow, col: oldCol + 1 }
       when 'UP'    then { row: oldRow - 1, col: oldCol }
       when 'DOWN'  then { row: oldRow + 1, col: oldCol }
-    @unoccupy player.segments
+    lastPos = player.segments.pop()
     @occupy player, newPos.row, newPos.col
+    @unoccupy [lastPos] unless lastPos is _.last player.segments
 
   occupy: (occupant, row, col) =>
     { char, row, col } = @level.occupy occupant, row, col
+    occupant.segments.unshift [row, col]
     @io.emit 'display', { char, row, col }
 
   unoccupy: (positions) =>

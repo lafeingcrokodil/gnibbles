@@ -32,7 +32,6 @@ class Level
     else
       { row, col } = @getRandomSpawnPos()
     @tiles[row][col].occupant = occupant
-    occupant.segments[0] = [row, col]
     return { char: @symbolAt(row, col), row, col }
 
   unoccupy: (row, col) =>
