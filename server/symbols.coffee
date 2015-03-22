@@ -1,5 +1,6 @@
-module.exports = {
+module.exports =
   "PLAYER": "@",
+  "FROG": "F",
   "GROUND": ".",
-  "WALL": "#"
-}
+  "H_WALL": "-",
+  "V_WALL": "-"

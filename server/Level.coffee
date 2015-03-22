@@ -23,7 +23,13 @@ class Level
     return tiles
 
   occupy: (occupant, row, col) =>
-    unless row? and col?
+    if row? and col?
+      switch
+        when row < 0 then row = @numRows - 1
+        when row >= @numRows then row = 0
+        when col < 0 then col = @numCols - 1
+        when col >= @numCols then col = 0
+    else
       { row, col } = @getRandomSpawnPos()
     @tiles[row][col].occupant = occupant
     occupant.segments[0] = [row, col]
@@ -35,15 +41,15 @@ class Level
 
   getRandomSpawnPos: =>
     loop # trial and error
-      row = Math.floor (@numRows * Math.random())
-      col = Math.floor (@numCols * Math.random())
-      break if @isValid(row, col) and not @getOccupant(row, col)
+      row = Math.floor(@numRows * Math.random())
+      col = Math.floor(@numCols * Math.random())
+      break if @isValidSpawnPos row, col
     return { row, col }
 
-  isValid: (row, col) =>
-    inBounds = 0 <= row < @numRows and 0 <= col < @numCols
+  isValidSpawnPos: (row, col) =>
     terrainOK = @tiles[row][col].terrain is symbols.GROUND
-    return inBounds and terrainOK
+    noOccupant = not @getOccupant row, col
+    return terrainOK and noOccupant
 
   getOccupant: (row, col) =>
     return @tiles[row][col].occupant
@@ -59,9 +65,5 @@ class Level
 
   getSymbol: (tile) ->
     if tile.occupant then symbols.PLAYER else tile.terrain
-
-  getWidth: => @numCols * @tileSize
-
-  getHeight: => @numRows * @tileSize
 
 module.exports = Level

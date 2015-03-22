@@ -64,7 +64,7 @@
     name = prompt('Please enter your name');
     socket = io();
     socket.emit('join', name);
-    return socket.on('level', function(data) {
+    socket.on('level', function(data) {
       var screen;
       screen = new Screen($('canvas')[0], data.numRows, data.numCols, data.tileSize);
       $('canvas').css('display', 'block');
@@ -74,6 +74,10 @@
         char = arg.char, row = arg.row, col = arg.col;
         return screen.display(char, row, col);
       });
+    });
+    return $(document).keydown(function(e) {
+      socket.emit('key', e.which);
+      return e.preventDefault();
     });
   });
 

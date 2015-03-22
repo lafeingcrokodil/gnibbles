@@ -36,3 +36,7 @@ $(document).ready ->
     screen.displayLevel data.tiles
     socket.on 'display', ({ char, row, col }) ->
       screen.display char, row, col
+
+  $(document).keydown (e) ->
+    socket.emit 'key', e.which
+    e.preventDefault()
