@@ -18,7 +18,7 @@
   "author": "lafeingcrokodil",
   "license": "MIT",
   "scripts": {
-    "start": "node ./bin/startServer.js"
+    "start": "coffee ./bin/startServer.coffee"
   },
   "dependencies": {
     "body-parser": "~1.12.0",
@@ -27,8 +27,10 @@
     "debug": "~2.1.1",
     "express": "~4.12.2",
     "jade": "~1.9.2",
-    "morgan": "~1.5.1",
+    "lodash": "^3.5.0",
+    "morgan-debug": "^0.1.1",
     "node-compass": "0.2.3",
-    "serve-favicon": "~2.2.0"
+    "serve-favicon": "~2.2.0",
+    "socket.io": "^1.3.5"
   }
 }
