@@ -1,7 +1,8 @@
 module.exports =
   "PLAYER": "@"
-  "FROG"  : "*"
+  "FROG": "*"
   "GROUND": "."
+  "NO_MANS_LAND": "#"
   "WALL_HORIZONTAL"  : "-"
   "WALL_VERTICAL"    : "|"
   "WALL_END"         : "+"

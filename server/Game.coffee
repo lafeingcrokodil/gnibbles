@@ -12,7 +12,7 @@ class Game
   playerCount: 1
   frogCount: 0
 
-  frogsPerLevel: 10
+  frogsPerLevel: 1
   initialLength: 5
   delay:
     move    : 50   # number of milliseconds between moves
@@ -32,8 +32,8 @@ class Game
     @levelIndex = (@levelIndex + 1) % @levels.length
     @level = new Level @levels[@levelIndex]
     @frogCount = 0
-    do @respawnAll
     @io.emit 'level', @level.getSnapshot()
+    do @respawnAll
     @timer = setInterval @moveAll, @delay.move
 
   spawnFrog: =>
