@@ -4,7 +4,7 @@ class Screen
     @context = canvas.getContext '2d'
 
     @width = canvas.width = @numCols * @tileSize
-    @height = canvas.height = (@numRows + 1) * @tileSize
+    @height = canvas.height = @numRows * @tileSize + 1
 
   getX: (col) => col * @tileSize
 
@@ -16,8 +16,11 @@ class Screen
       when '@'
         @context.fillStyle = 'green'
         @context.fillRect @getX(col) + 1, @getY(row-1) + 2, @tileSize - 2, @tileSize - 2
-      when '#'
+      when '-', '|', '+'
         @context.fillStyle = 'red'
+        @context.fillRect @getX(col) + 1, @getY(row-1) + 2, @tileSize - 2, @tileSize - 2
+      when 'F'
+        @context.fillStyle = 'yellow'
         @context.fillRect @getX(col) + 1, @getY(row-1) + 2, @tileSize - 2, @tileSize - 2
 
   displayLevel: (level) =>

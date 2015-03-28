@@ -5,9 +5,9 @@ symbols = require './symbols'
 
 class Level
 
-  tileSize: 5
+  tileSize: 10
 
-  constructor: (level = '1') ->
+  constructor: (level = '3') ->
     @tiles = @loadFromFile level
 
     @numRows = @tiles.length
@@ -22,14 +22,16 @@ class Level
 
     return tiles
 
+  getActualPos: ({ row, col }) =>
+    switch
+      when row < 0 then row = @numRows - 1
+      when row >= @numRows then row = 0
+      when col < 0 then col = @numCols - 1
+      when col >= @numCols then col = 0
+    return { row, col }
+
   occupy: (occupant, row, col) =>
-    if row? and col?
-      switch
-        when row < 0 then row = @numRows - 1
-        when row >= @numRows then row = 0
-        when col < 0 then col = @numCols - 1
-        when col >= @numCols then col = 0
-    else
+    unless row? and col?
       { row, col } = @getRandomSpawnPos()
     @tiles[row][col].occupant = occupant
     return { char: @symbolAt(row, col), row, col }
@@ -50,8 +52,11 @@ class Level
     noOccupant = not @getOccupant row, col
     return terrainOK and noOccupant
 
-  getOccupant: (row, col) =>
-    return @tiles[row][col].occupant
+  isWall: ({ row, col }) =>
+    @tiles[row]?[col]?.terrain in [symbols.H_WALL, symbols.V_WALL, symbols.C_WALL]
+
+  getOccupant: ({ row, col }) =>
+    return @tiles[row]?[col]?.occupant
 
   getSnapshot: =>
     tiles = []
@@ -63,6 +68,6 @@ class Level
     @getSymbol @tiles[row][col]
 
   getSymbol: (tile) ->
-    if tile.occupant then symbols.PLAYER else tile.terrain
+    if tile.occupant then symbols[tile.occupant.type] else tile.terrain
 
 module.exports = Level

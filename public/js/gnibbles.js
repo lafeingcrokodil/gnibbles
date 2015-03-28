@@ -14,7 +14,7 @@
       this.getX = bind(this.getX, this);
       this.context = canvas.getContext('2d');
       this.width = canvas.width = this.numCols * this.tileSize;
-      this.height = canvas.height = (this.numRows + 1) * this.tileSize;
+      this.height = canvas.height = this.numRows * this.tileSize + 1;
     }
 
     Screen.prototype.getX = function(col) {
@@ -31,8 +31,13 @@
         case '@':
           this.context.fillStyle = 'green';
           return this.context.fillRect(this.getX(col) + 1, this.getY(row - 1) + 2, this.tileSize - 2, this.tileSize - 2);
-        case '#':
+        case '-':
+        case '|':
+        case '+':
           this.context.fillStyle = 'red';
+          return this.context.fillRect(this.getX(col) + 1, this.getY(row - 1) + 2, this.tileSize - 2, this.tileSize - 2);
+        case 'F':
+          this.context.fillStyle = 'yellow';
           return this.context.fillRect(this.getX(col) + 1, this.getY(row - 1) + 2, this.tileSize - 2, this.tileSize - 2);
       }
     };
