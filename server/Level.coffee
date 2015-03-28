@@ -1,3 +1,4 @@
+_    = require 'lodash'
 fs   = require 'fs'
 path = require 'path'
 
@@ -7,11 +8,13 @@ class Level
 
   tileSize: 10
 
-  constructor: (level = '3') ->
+  constructor: (level) ->
     @tiles = @loadFromFile level
 
     @numRows = @tiles.length
     @numCols = @tiles[0].length
+
+    @wallSymbols = _.values _.filter(symbols, (symbol, symbolName) -> /^WALL/.test symbolName)
 
   loadFromFile: (level) ->
     levelFile = fs.readFileSync path.join('server', 'levels', "#{level}.txt"), 'utf8'
@@ -53,7 +56,7 @@ class Level
     return terrainOK and noOccupant
 
   isWall: ({ row, col }) =>
-    @tiles[row]?[col]?.terrain in [symbols.H_WALL, symbols.V_WALL, symbols.C_WALL]
+    @tiles[row]?[col]?.terrain in @wallSymbols
 
   getOccupant: ({ row, col }) =>
     return @tiles[row]?[col]?.occupant
@@ -69,5 +72,9 @@ class Level
 
   getSymbol: (tile) ->
     if tile.occupant then symbols[tile.occupant.type] else tile.terrain
+
+  @getAvailableLevels: ->
+    fs.readdirSync(path.join('server', 'levels')).map (filename) ->
+      filename.replace /\.txt/, ''
 
 module.exports = Level

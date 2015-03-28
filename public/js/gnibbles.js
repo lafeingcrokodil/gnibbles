@@ -49,10 +49,50 @@
           this.context.moveTo(this.getX(col + 1) - offset, this.getY(row - 1));
           this.context.lineTo(this.getX(col + 1) - offset, this.getY(row));
           return this.context.stroke();
+        case '{':
+          this.context.strokeStyle = 'green';
+          this.context.beginPath();
+          this.context.moveTo(this.getX(col) + offset, this.getY(row));
+          this.context.lineTo(this.getX(col) + offset, this.getY(row - 1) + offset);
+          this.context.lineTo(this.getX(col + 1), this.getY(row - 1) + offset);
+          this.context.moveTo(this.getX(col + 1) - offset, this.getY(row));
+          this.context.lineTo(this.getX(col + 1) - offset, this.getY(row) - offset);
+          this.context.lineTo(this.getX(col + 1), this.getY(row) - offset);
+          return this.context.stroke();
+        case '}':
+          this.context.strokeStyle = 'green';
+          this.context.beginPath();
+          this.context.moveTo(this.getX(col), this.getY(row - 1) + offset);
+          this.context.lineTo(this.getX(col + 1) - offset, this.getY(row - 1) + offset);
+          this.context.lineTo(this.getX(col + 1) - offset, this.getY(row));
+          this.context.moveTo(this.getX(col), this.getY(row) - offset);
+          this.context.lineTo(this.getX(col) + offset, this.getY(row) - offset);
+          this.context.lineTo(this.getX(col) + offset, this.getY(row));
+          return this.context.stroke();
+        case '[':
+          this.context.strokeStyle = 'green';
+          this.context.beginPath();
+          this.context.moveTo(this.getX(col) + offset, this.getY(row - 1));
+          this.context.lineTo(this.getX(col) + offset, this.getY(row) - offset);
+          this.context.lineTo(this.getX(col + 1), this.getY(row) - offset);
+          this.context.moveTo(this.getX(col + 1) - offset, this.getY(row - 1));
+          this.context.lineTo(this.getX(col + 1) - offset, this.getY(row - 1) + offset);
+          this.context.lineTo(this.getX(col + 1), this.getY(row - 1) + offset);
+          return this.context.stroke();
+        case ']':
+          this.context.strokeStyle = 'green';
+          this.context.beginPath();
+          this.context.moveTo(this.getX(col), this.getY(row - 1) + offset);
+          this.context.lineTo(this.getX(col) + offset, this.getY(row - 1) + offset);
+          this.context.lineTo(this.getX(col) + offset, this.getY(row - 1));
+          this.context.moveTo(this.getX(col), this.getY(row) - offset);
+          this.context.lineTo(this.getX(col + 1) - offset, this.getY(row) - offset);
+          this.context.lineTo(this.getX(col + 1) - offset, this.getY(row - 1));
+          return this.context.stroke();
         case '+':
           this.context.strokeStyle = 'green';
           return this.context.strokeRect(this.getX(col) + 1, this.getY(row - 1) + 1, this.tileSize - 2, this.tileSize - 2);
-        case 'F':
+        case '*':
           return this.fillCircle(row, col, 'yellow');
       }
     };

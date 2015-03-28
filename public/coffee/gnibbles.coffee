@@ -32,10 +32,50 @@ class Screen
         @context.moveTo(@getX(col+1) - offset, @getY(row-1))
         @context.lineTo(@getX(col+1) - offset, @getY(row))
         @context.stroke()
+      when '{'
+        @context.strokeStyle = 'green'
+        @context.beginPath()
+        @context.moveTo(@getX(col) + offset, @getY(row))
+        @context.lineTo(@getX(col) + offset, @getY(row-1) + offset)
+        @context.lineTo(@getX(col+1), @getY(row-1) + offset)
+        @context.moveTo(@getX(col+1) - offset, @getY(row))
+        @context.lineTo(@getX(col+1) - offset, @getY(row) - offset)
+        @context.lineTo(@getX(col+1), @getY(row) - offset)
+        @context.stroke()
+      when '}'
+        @context.strokeStyle = 'green'
+        @context.beginPath()
+        @context.moveTo(@getX(col), @getY(row-1) + offset)
+        @context.lineTo(@getX(col+1) - offset, @getY(row-1) + offset)
+        @context.lineTo(@getX(col+1) - offset, @getY(row))
+        @context.moveTo(@getX(col), @getY(row) - offset)
+        @context.lineTo(@getX(col) + offset, @getY(row) - offset)
+        @context.lineTo(@getX(col) + offset, @getY(row))
+        @context.stroke()
+      when '['
+        @context.strokeStyle = 'green'
+        @context.beginPath()
+        @context.moveTo(@getX(col) + offset, @getY(row-1))
+        @context.lineTo(@getX(col) + offset, @getY(row) - offset)
+        @context.lineTo(@getX(col+1), @getY(row) - offset)
+        @context.moveTo(@getX(col+1) - offset, @getY(row-1))
+        @context.lineTo(@getX(col+1) - offset, @getY(row-1) + offset)
+        @context.lineTo(@getX(col+1), @getY(row-1) + offset)
+        @context.stroke()
+      when ']'
+        @context.strokeStyle = 'green'
+        @context.beginPath()
+        @context.moveTo(@getX(col), @getY(row-1) + offset)
+        @context.lineTo(@getX(col) + offset, @getY(row-1) + offset)
+        @context.lineTo(@getX(col) + offset, @getY(row-1))
+        @context.moveTo(@getX(col), @getY(row) - offset)
+        @context.lineTo(@getX(col+1) - offset, @getY(row) - offset)
+        @context.lineTo(@getX(col+1) - offset, @getY(row-1))
+        @context.stroke()
       when '+'
         @context.strokeStyle = 'green'
         @context.strokeRect @getX(col) + 1, @getY(row-1) + 1, @tileSize - 2, @tileSize - 2
-      when 'F'
+      when '*'
         @fillCircle row, col, 'yellow'
 
   fillCircle: (row, col, colour) =>

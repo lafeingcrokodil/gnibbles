@@ -8,18 +8,32 @@ class Game
 
   players: []
 
+  levelIndex: 0
   playerCount: 1
+  frogCount: 0
+
+  frogsPerLevel: 10
   initialLength: 5
   delay:
     move    : 50   # number of milliseconds between moves
     respawn : 3000 # number of milliseconds until player respawns
 
   constructor: (@io) ->
-    @level = new Level
+    @levels = Level.getAvailableLevels()
+    @level = new Level @levels[0]
     do @spawnFrog
     @io.on 'connection', (socket) =>
       name = "Player #{@playerCount++}"
       @addPlayer name, socket
+    @timer = setInterval @moveAll, @delay.move
+
+  loadNextLevel: =>
+    clearInterval @timer
+    @levelIndex = (@levelIndex + 1) % @levels.length
+    @level = new Level @levels[@levelIndex]
+    @frogCount = 0
+    do @respawnAll
+    @io.emit 'level', @level.getSnapshot()
     @timer = setInterval @moveAll, @delay.move
 
   spawnFrog: =>
@@ -89,7 +103,10 @@ class Game
         { row, col } = _.last player.segments
         for i in [1..3]
           player.segments.push { row, col }
-        do @spawnFrog
+        if ++@frogCount < @frogsPerLevel
+          do @spawnFrog
+        else
+          do @loadNextLevel
       else
         @handleCollision player, occupant, newPos
     else
@@ -114,12 +131,21 @@ class Game
     @unoccupy player.segments
     player.segments = []
     player.direction = null
-    setTimeout @respawn(player), @delay.respawn
+    setTimeout (=> @respawn(player)), @delay.respawn
 
-  respawn: (player) => =>
+  respawnAll: =>
+    for player in @players
+      length = player.segments.length
+      @unoccupy player.segments
+      player.segments = []
+      player.direction = null
+      @respawn player, length
+    do @spawnFrog
+
+  respawn: (player, length = @initialLength) =>
     @occupy player
     { row, col } = player.segments[0]
-    while player.segments.length < @initialLength
+    while player.segments.length < length
       player.segments.push { row, col }
 
   occupy: (occupant, row, col) =>
