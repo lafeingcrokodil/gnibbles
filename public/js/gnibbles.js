@@ -9,12 +9,13 @@
       this.numCols = numCols;
       this.tileSize = tileSize;
       this.displayLevel = bind(this.displayLevel, this);
+      this.fillCircle = bind(this.fillCircle, this);
       this.display = bind(this.display, this);
       this.getY = bind(this.getY, this);
       this.getX = bind(this.getX, this);
       this.context = canvas.getContext('2d');
       this.width = canvas.width = this.numCols * this.tileSize;
-      this.height = canvas.height = this.numRows * this.tileSize + 1;
+      this.height = canvas.height = this.numRows * this.tileSize;
     }
 
     Screen.prototype.getX = function(col) {
@@ -26,20 +27,47 @@
     };
 
     Screen.prototype.display = function(char, row, col) {
-      this.context.clearRect(this.getX(col), this.getY(row - 1) + 1, this.tileSize, this.tileSize);
+      var offset;
+      this.context.clearRect(this.getX(col), this.getY(row - 1), this.tileSize, this.tileSize);
+      offset = Math.floor(this.tileSize / 3);
       switch (char) {
         case '@':
-          this.context.fillStyle = 'green';
-          return this.context.fillRect(this.getX(col) + 1, this.getY(row - 1) + 2, this.tileSize - 2, this.tileSize - 2);
+          return this.fillCircle(row, col, 'green');
         case '-':
+          this.context.strokeStyle = 'green';
+          this.context.beginPath();
+          this.context.moveTo(this.getX(col), this.getY(row - 1) + offset);
+          this.context.lineTo(this.getX(col + 1), this.getY(row - 1) + offset);
+          this.context.moveTo(this.getX(col), this.getY(row) - offset);
+          this.context.lineTo(this.getX(col + 1), this.getY(row) - offset);
+          return this.context.stroke();
         case '|':
+          this.context.strokeStyle = 'green';
+          this.context.beginPath();
+          this.context.moveTo(this.getX(col) + offset, this.getY(row - 1));
+          this.context.lineTo(this.getX(col) + offset, this.getY(row));
+          this.context.moveTo(this.getX(col + 1) - offset, this.getY(row - 1));
+          this.context.lineTo(this.getX(col + 1) - offset, this.getY(row));
+          return this.context.stroke();
         case '+':
-          this.context.fillStyle = 'red';
-          return this.context.fillRect(this.getX(col) + 1, this.getY(row - 1) + 2, this.tileSize - 2, this.tileSize - 2);
+          this.context.strokeStyle = 'green';
+          return this.context.strokeRect(this.getX(col) + 1, this.getY(row - 1) + 1, this.tileSize - 2, this.tileSize - 2);
         case 'F':
-          this.context.fillStyle = 'yellow';
-          return this.context.fillRect(this.getX(col) + 1, this.getY(row - 1) + 2, this.tileSize - 2, this.tileSize - 2);
+          return this.fillCircle(row, col, 'yellow');
       }
+    };
+
+    Screen.prototype.fillCircle = function(row, col, colour) {
+      var centre, radius;
+      radius = Math.floor(this.tileSize / 2);
+      centre = {
+        x: this.getX(col) + radius,
+        y: this.getY(row - 1) + radius
+      };
+      this.context.fillStyle = colour;
+      this.context.beginPath();
+      this.context.arc(centre.x, centre.y, radius - 2, 0, 2 * Math.PI);
+      return this.context.fill();
     };
 
     Screen.prototype.displayLevel = function(level) {
