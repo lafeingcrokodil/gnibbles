@@ -65,10 +65,8 @@
   })();
 
   $(document).ready(function() {
-    var name, socket;
-    name = prompt('Please enter your name');
+    var socket;
     socket = io();
-    socket.emit('join', name);
     socket.on('level', function(data) {
       var screen;
       screen = new Screen($('canvas')[0], data.numRows, data.numCols, data.tileSize);

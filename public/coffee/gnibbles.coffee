@@ -29,9 +29,7 @@ class Screen
         @display char, i, j
 
 $(document).ready ->
-  name = prompt 'Please enter your name'
   socket = io()
-  socket.emit 'join', name
 
   socket.on 'level', (data) ->
     screen = new Screen $('canvas')[0], data.numRows, data.numCols, data.tileSize

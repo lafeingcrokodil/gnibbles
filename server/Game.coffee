@@ -8,6 +8,7 @@ class Game
 
   players: []
 
+  playerCount: 1
   initialLength: 5
   delay:
     move    : 50   # number of milliseconds between moves
@@ -17,7 +18,8 @@ class Game
     @level = new Level
     do @spawnFrog
     @io.on 'connection', (socket) =>
-      socket.on 'join', (name) => @addPlayer name, socket
+      name = "Player #{@playerCount++}"
+      @addPlayer name, socket
     @timer = setInterval @moveAll, @delay.move
 
   spawnFrog: =>
