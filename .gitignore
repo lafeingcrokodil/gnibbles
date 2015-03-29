@@ -1,6 +1,7 @@
 *.log
 
 .*
-!/.gitignore
+!.gitignore
+!.buildpacks
 
 node_modules
