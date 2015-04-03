@@ -9,8 +9,8 @@ Frog   = require './Frog'
 
 class Game
 
-  frogsPerLevel : 1    # number of frogs required to advance to next level
-  moveDelay     : 50   # number of milliseconds between moves
+  frogsPerLevel : 3    # number of frogs required to advance to next level
+  moveDelay     : 70   # number of milliseconds between moves
   respawnDelay  : 3000 # number of milliseconds until player can move again
 
   constructor: (@io) ->

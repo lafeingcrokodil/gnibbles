@@ -1,6 +1,6 @@
 {
   "name": "gnibbles",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Snake game based on GNOME Nibbles",
   "repository": {
     "type": "git",
