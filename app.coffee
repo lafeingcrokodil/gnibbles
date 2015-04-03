@@ -3,7 +3,6 @@ express      = require 'express'
 logger       = require 'morgan-debug'
 bodyParser   = require 'body-parser'
 cookieParser = require 'cookie-parser'
-compass      = require 'node-compass'
 favicon      = require 'serve-favicon'
 
 GnibblesGame = require './server/Game'
@@ -19,7 +18,6 @@ app.use logger('server', 'dev')
 app.use bodyParser.json()
 app.use bodyParser.urlencoded({ extended: false })
 app.use cookieParser()
-app.use compass({ mode: 'expanded' })
 app.use express.static(path.join(__dirname, 'public'))
 
 app.get '/', (req, res, next) ->
