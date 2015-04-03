@@ -33,13 +33,11 @@ class Level
       when col >= @numCols then col = 0
     return { row, col }
 
-  occupy: (occupant, row, col) =>
-    unless row? and col?
-      { row, col } = @getRandomSpawnPos()
+  occupy: (occupant, { row, col }) =>
     @tiles[row][col].occupant = occupant
     return { char: @symbolAt(row, col), row, col }
 
-  unoccupy: (row, col) =>
+  unoccupy: ({ row, col }) =>
     @tiles[row][col].occupant = null
     return { char: @symbolAt(row, col) }
 

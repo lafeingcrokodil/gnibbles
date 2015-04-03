@@ -2,161 +2,147 @@ _     = require 'lodash'
 debug = require('debug')('game')
 
 keyCodes = require './keyCodes'
-Level    = require './Level'
+
+Level  = require './Level'
+Player = require './Player'
+Frog   = require './Frog'
 
 class Game
 
-  players: []
-
-  levelIndex: 0
-  playerCount: 1
-  frogCount: 0
-
-  frogsPerLevel: 1
-  initialLength: 5
-  delay:
-    move    : 50   # number of milliseconds between moves
-    respawn : 3000 # number of milliseconds until player respawns
+  frogsPerLevel : 1    # number of frogs required to advance to next level
+  moveDelay     : 50   # number of milliseconds between moves
+  respawnDelay  : 3000 # number of milliseconds until player can move again
 
   constructor: (@io) ->
+    @levelIndex = 0
     @levels = Level.getAvailableLevels()
-    @level = new Level @levels[0]
-    do @spawnFrog
-    @io.on 'connection', (socket) =>
-      name = "Player #{@playerCount++}"
-      @addPlayer name, socket
-    @timer = setInterval @moveAll, @delay.move
+    @level = new Level @levels[@levelIndex]
+
+    @frogCount = 0
+    @spawnFrog()
+
+    @players = []
+    @playerCount = 0
+    @io.on 'connection', @addPlayer
 
   loadNextLevel: =>
-    clearInterval @timer
+    @pause player for player in @players
+
     @levelIndex = (@levelIndex + 1) % @levels.length
     @level = new Level @levels[@levelIndex]
-    @frogCount = 0
     @io.emit 'level', @level.getSnapshot()
-    do @respawnAll
-    @timer = setInterval @moveAll, @delay.move
 
-  spawnFrog: =>
-    frog = { type: 'FROG' }
-    { char, row, col } = @level.occupy frog, row, col
-    @io.emit 'display', { char, row, col }
+    @frogCount = 0
+    @spawnFrog()
 
-  addPlayer: (name, socket) =>
-    unless _.findWhere(@players, { name })
-      debug "#{name} joined."
-      newPlayer = { name, type: 'PLAYER', socket, segments: [] }
-      @occupy newPlayer
-      { row, col } = newPlayer.segments[0]
-      while newPlayer.segments.length < @initialLength
-        newPlayer.segments.push { row, col }
-      @players.push newPlayer
-      socket.emit 'level', @level.getSnapshot()
-      socket.on 'key', @onKey(newPlayer)
-      socket.on 'disconnect', => @removePlayer name
-    else
-      socket.emit 'error', { code: 'ER_DUPLICATE_NAME' }
+    @respawn player, player.getLength() for player in @players
+
+  addPlayer: (socket) =>
+    newPlayer = new Player "Player #{++@playerCount}", socket, @onKey
+    debug "#{newPlayer.name} joined."
+
+    @players.push newPlayer
+
+    socket.emit 'level', @level.getSnapshot()
+    socket.on 'disconnect', => @removePlayer newPlayer.name
+
+    @respawn newPlayer
 
   removePlayer: (name) =>
     debug "#{name} left."
     [player] = _.remove @players, 'name', name
     @unoccupy player.segments if player
 
+  pause: (player) =>
+    player.socket.removeListener 'key', player.keyListener
+    @stopAutoMove player
+
+  unpause: (player) =>
+    player.socket.on 'key', player.keyListener
+    @startAutoMove player
+
+  stopAutoMove: (player) =>
+    if player.moveTimer
+      clearInterval player.moveTimer
+      player.moveTimer = null
+
+  startAutoMove: (player) =>
+    unless player.moveTimer
+      player.moveTimer = setInterval @autoMove(player), @moveDelay
+
   onKey: (player) => (keyCode) =>
     switch keyCode
-      when keyCodes.LEFT_ARROW
-        @changeDirection player, 'LEFT'
-      when keyCodes.RIGHT_ARROW
-        @changeDirection player, 'RIGHT'
-      when keyCodes.UP_ARROW
-        @changeDirection player, 'UP'
-      when keyCodes.DOWN_ARROW
-        @changeDirection player, 'DOWN'
+      when keyCodes.LEFT_ARROW  then @changeDirection player, 'LEFT'
+      when keyCodes.RIGHT_ARROW then @changeDirection player, 'RIGHT'
+      when keyCodes.UP_ARROW    then @changeDirection player, 'UP'
+      when keyCodes.DOWN_ARROW  then @changeDirection player, 'DOWN'
 
   changeDirection: (player, newDirection) =>
-    return unless player.segments.length
-    switch player.direction
-      when 'LEFT', 'RIGHT'
-        player.direction = newDirection if newDirection in ['UP', 'DOWN']
-      when 'UP', 'DOWN'
-        player.direction = newDirection if newDirection in ['LEFT', 'RIGHT']
-      else
-        player.direction = newDirection
+    newPos = player.changeDirection newDirection
+    if newPos
+      @stopAutoMove player
+      @move player, newPos
 
-  moveAll: =>
-    @move player for player in @players
+  autoMove: (player) => =>
+    newPos = player.getTheoreticalNewPos()
+    @move player, newPos if newPos
 
-  move: (player) =>
-    return unless player.direction and player.segments.length
-    { row: oldRow, col: oldCol } = oldPos = player.segments[0]
-    theoreticalPos = switch player.direction
-      when 'LEFT'  then { row: oldRow, col: oldCol - 1 }
-      when 'RIGHT' then { row: oldRow, col: oldCol + 1 }
-      when 'UP'    then { row: oldRow - 1, col: oldCol }
-      when 'DOWN'  then { row: oldRow + 1, col: oldCol }
+  move: (player, theoreticalPos) =>
     newPos = @level.getActualPos theoreticalPos
     if @level.isWall newPos
-      @reset player
+      @respawn player
     else if @level.getOccupant newPos
       occupant = @level.getOccupant newPos
       if occupant.type is 'FROG'
         @unoccupy [newPos]
-        { row, col } = _.last player.segments
-        for i in [1..3]
-          player.segments.push { row, col }
+        occupant.affect player, @getOtherPlayers(player)
         if ++@frogCount < @frogsPerLevel
-          do @spawnFrog
+          @spawnFrog()
         else
-          do @loadNextLevel
+          @loadNextLevel()
       else
         @handleCollision player, occupant, newPos
     else
-      lastPos = player.segments.pop()
-      @occupy player, newPos.row, newPos.col
-      @unoccupy [lastPos] unless lastPos is _.last player.segments
+      @occupy player, newPos
+      vacatedPos = player.move newPos
+      @unoccupy [vacatedPos] if vacatedPos
+      @startAutoMove player
+
+  getOtherPlayers: (player) =>
+    @players.filter (otherPlayer) -> otherPlayer.name isnt player.name
 
   handleCollision: (player, occupant, newPos) =>
     if occupant.name isnt player.name
-      { row: occupantRow, col: occupantCol } = occupant.segments[0]
-      if occupantRow is newPos.row and occupantCol is newPos.col
-        @reset player
-        @reset occupant
+      if newPos is occupant.getHeadPos() # head-on collision
+        @respawn player
+        @respawn occupant
       else
-        @reset player
+        @respawn player
     else
-      { row: occupantRow, col: occupantCol } = occupant.segments[1]
-      unless occupantRow is newPos.row and occupantCol is newPos.col
-        @reset player
+      @respawn player
 
-  reset: (player) =>
+  respawn: (player, length) =>
+    @pause player
     @unoccupy player.segments
-    player.segments = []
-    player.direction = null
-    setTimeout (=> @respawn(player)), @delay.respawn
+    spawnPos = @level.getRandomSpawnPos()
+    player.spawn spawnPos, length
+    @occupy player, spawnPos
+    setTimeout (=> @unpause player), @respawnDelay
 
-  respawnAll: =>
-    for player in @players
-      length = player.segments.length
-      @unoccupy player.segments
-      player.segments = []
-      player.direction = null
-      @respawn player, length
-    do @spawnFrog
-
-  respawn: (player, length = @initialLength) =>
-    @occupy player
-    { row, col } = player.segments[0]
-    while player.segments.length < length
-      player.segments.push { row, col }
-
-  occupy: (occupant, row, col) =>
-    { char, row, col } = @level.occupy occupant, row, col
-    occupant.segments.unshift { row, col }
+  spawnFrog: =>
+    frog = new Frog
+    position = @level.getRandomSpawnPos()
+    { char, row, col } = @level.occupy frog, position
     @io.emit 'display', { char, row, col }
+
+  occupy: (occupant, position) =>
+    { char, row, col } = @level.occupy occupant, position
+    @io.emit 'display', { char, row, col }
+    return { row, col }
 
   unoccupy: (positions) =>
     for position in positions
-      { row, col } = position
-      { char } = @level.unoccupy row, col
-      @io.emit 'display', { char, row, col }
+      { char } = @level.unoccupy position
+      @io.emit 'display', { char, row: position.row, col: position.col }
 
 module.exports = Game
