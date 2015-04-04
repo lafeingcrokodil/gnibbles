@@ -1,12 +1,12 @@
 module.exports =
-  "PLAYER": "@"
-  "FROG": "*"
-  "GROUND": "."
-  "NO_MANS_LAND": "#"
-  "WALL_HORIZONTAL"  : "-"
-  "WALL_VERTICAL"    : "|"
-  "WALL_END"         : "+"
-  "WALL_TOPLEFT"     : "{"
-  "WALL_TOPRIGHT"    : "}"
-  "WALL_BOTTOMLEFT"  : "["
-  "WALL_BOTTOMRIGHT" : "]"
+  PLAYER           : '@'
+  FROG             : '*'
+  GROUND           : '.'
+  NO_MANS_LAND     : '#'
+  WALL_HORIZONTAL  : '-'
+  WALL_VERTICAL    : '|'
+  WALL_END         : '+'
+  WALL_TOPLEFT     : '{'
+  WALL_TOPRIGHT    : '}'
+  WALL_BOTTOMLEFT  : '['
+  WALL_BOTTOMRIGHT : ']'

@@ -1,7 +1,7 @@
 _     = require 'lodash'
 debug = require('debug')('game')
 
-keyCodes = require './keyCodes'
+keys = require './keys'
 
 Level  = require './Level'
 Player = require './Player'
@@ -71,11 +71,11 @@ class Game
       player.moveTimer = setInterval @autoMove(player), @moveDelay
 
   onKey: (player) => (keyCode) =>
-    switch keyCode
-      when keyCodes.LEFT_ARROW  then @changeDirection player, 'LEFT'
-      when keyCodes.RIGHT_ARROW then @changeDirection player, 'RIGHT'
-      when keyCodes.UP_ARROW    then @changeDirection player, 'UP'
-      when keyCodes.DOWN_ARROW  then @changeDirection player, 'DOWN'
+    switch keys[keyCode]
+      when 'LEFT_ARROW'  then @changeDirection player, 'LEFT'
+      when 'RIGHT_ARROW' then @changeDirection player, 'RIGHT'
+      when 'UP_ARROW'    then @changeDirection player, 'UP'
+      when 'DOWN_ARROW'  then @changeDirection player, 'DOWN'
 
   changeDirection: (player, newDirection) =>
     newPos = player.changeDirection newDirection
