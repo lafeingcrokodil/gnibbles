@@ -16,6 +16,8 @@ class Screen
     switch char
       when '@'
         @fillCircle row, col, 'green'
+      when '?'
+        @fillCircle row, col, 'grey'
       when '-'
         @context.strokeStyle = 'green'
         @context.beginPath()

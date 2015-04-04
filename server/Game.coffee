@@ -54,12 +54,16 @@ class Game
     @unoccupy player.segments if player
 
   pause: (player) =>
+    player.paused = true
     player.socket.removeListener 'key', player.keyListener
     @stopAutoMove player
 
   unpause: (player) =>
+    player.paused = false
     player.socket.on 'key', player.keyListener
     @startAutoMove player
+    { row, col } = player.getHeadPos()
+    @io.emit 'display', { char: @level.symbolAt(row, col), row, col }
 
   stopAutoMove: (player) =>
     if player.moveTimer

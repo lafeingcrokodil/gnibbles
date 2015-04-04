@@ -1,5 +1,6 @@
 module.exports =
   PLAYER           : '@'
+  PLAYER_PAUSED    : '?'
   FROG             : '*'
   GROUND           : '.'
   NO_MANS_LAND     : '#'

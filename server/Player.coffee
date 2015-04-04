@@ -4,6 +4,7 @@ class Player
 
   type: 'PLAYER'
   segments: []
+  paused: true
 
   initialLength: 5 # initial length of snake (number of segments)
 

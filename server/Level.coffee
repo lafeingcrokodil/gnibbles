@@ -69,7 +69,11 @@ class Level
     @getSymbol @tiles[row][col]
 
   getSymbol: (tile) ->
-    if tile.occupant then symbols[tile.occupant.type] else tile.terrain
+    if tile.occupant?.paused
+      symbols[tile.occupant.type + '_PAUSED']
+    else if tile.occupant
+      symbols[tile.occupant.type]
+    else tile.terrain
 
   @getAvailableLevels: ->
     fs.readdirSync(path.join('server', 'levels')).map (filename) ->

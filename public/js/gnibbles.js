@@ -33,6 +33,8 @@
       switch (char) {
         case '@':
           return this.fillCircle(row, col, 'green');
+        case '?':
+          return this.fillCircle(row, col, 'grey');
         case '-':
           this.context.strokeStyle = 'green';
           this.context.beginPath();
