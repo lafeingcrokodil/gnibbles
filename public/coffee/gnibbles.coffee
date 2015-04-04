@@ -1,5 +1,7 @@
 class Screen
 
+  colours: ['red', 'yellow', 'purple']
+
   constructor: (canvas, @numRows, @numCols, @tileSize) ->
     @context = canvas.getContext '2d'
 
@@ -18,6 +20,17 @@ class Screen
         @fillCircle row, col, 'green'
       when '?'
         @fillCircle row, col, 'grey'
+      when '*'
+        @fillSquare row, col, 'green'
+      when 'G'
+        @fillCircle row, col, 'red'
+      when 'B'
+        @fillCircle row, col, 'yellow'
+      when 'T'
+        @fillCircle row, col, 'purple'
+      when 'A'
+        index = @getRandomInt 0, @colours.length
+        @fillCircle row, col, @colours[index]
       when '-'
         @context.strokeStyle = 'green'
         @context.beginPath()
@@ -77,8 +90,6 @@ class Screen
       when '+'
         @context.strokeStyle = 'green'
         @context.strokeRect @getX(col) + 1, @getY(row-1) + 1, @tileSize - 2, @tileSize - 2
-      when '*'
-        @fillCircle row, col, 'yellow'
 
   fillCircle: (row, col, colour) =>
     radius = Math.floor @tileSize/2
@@ -87,6 +98,13 @@ class Screen
     @context.beginPath()
     @context.arc(centre.x, centre.y, radius - 2, 0, 2*Math.PI)
     @context.fill()
+
+  fillSquare: (row, col, colour) =>
+    @context.fillStyle = colour
+    @context.fillRect @getX(col) + 1, @getY(row-1) + 1, @tileSize - 2, @tileSize - 2
+
+  getRandomInt: (min, max) ->
+    Math.floor(Math.random() * (max - min)) + min
 
   displayLevel: (level) =>
     for row, i in level

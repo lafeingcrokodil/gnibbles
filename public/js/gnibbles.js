@@ -4,11 +4,14 @@
     bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   Screen = (function() {
+    Screen.prototype.colours = ['red', 'yellow', 'purple'];
+
     function Screen(canvas, numRows, numCols, tileSize) {
       this.numRows = numRows;
       this.numCols = numCols;
       this.tileSize = tileSize;
       this.displayLevel = bind(this.displayLevel, this);
+      this.fillSquare = bind(this.fillSquare, this);
       this.fillCircle = bind(this.fillCircle, this);
       this.display = bind(this.display, this);
       this.getY = bind(this.getY, this);
@@ -27,7 +30,7 @@
     };
 
     Screen.prototype.display = function(char, row, col) {
-      var offset;
+      var index, offset;
       this.context.clearRect(this.getX(col), this.getY(row - 1), this.tileSize, this.tileSize);
       offset = Math.floor(this.tileSize / 3);
       switch (char) {
@@ -35,6 +38,17 @@
           return this.fillCircle(row, col, 'green');
         case '?':
           return this.fillCircle(row, col, 'grey');
+        case '*':
+          return this.fillSquare(row, col, 'green');
+        case 'G':
+          return this.fillCircle(row, col, 'red');
+        case 'B':
+          return this.fillCircle(row, col, 'yellow');
+        case 'T':
+          return this.fillCircle(row, col, 'purple');
+        case 'A':
+          index = this.getRandomInt(0, this.colours.length);
+          return this.fillCircle(row, col, this.colours[index]);
         case '-':
           this.context.strokeStyle = 'green';
           this.context.beginPath();
@@ -94,8 +108,6 @@
         case '+':
           this.context.strokeStyle = 'green';
           return this.context.strokeRect(this.getX(col) + 1, this.getY(row - 1) + 1, this.tileSize - 2, this.tileSize - 2);
-        case '*':
-          return this.fillCircle(row, col, 'yellow');
       }
     };
 
@@ -110,6 +122,15 @@
       this.context.beginPath();
       this.context.arc(centre.x, centre.y, radius - 2, 0, 2 * Math.PI);
       return this.context.fill();
+    };
+
+    Screen.prototype.fillSquare = function(row, col, colour) {
+      this.context.fillStyle = colour;
+      return this.context.fillRect(this.getX(col) + 1, this.getY(row - 1) + 1, this.tileSize - 2, this.tileSize - 2);
+    };
+
+    Screen.prototype.getRandomInt = function(min, max) {
+      return Math.floor(Math.random() * (max - min)) + min;
     };
 
     Screen.prototype.displayLevel = function(level) {

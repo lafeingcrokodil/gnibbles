@@ -5,13 +5,16 @@ keys = require './keys'
 
 Level  = require './Level'
 Player = require './Player'
-Frog   = require './Frog'
+Frog   = require './creatures/Frog'
+Bonus  = require './creatures/Bonus'
 
 class Game
 
-  frogsPerLevel : 3    # number of frogs required to advance to next level
-  moveDelay     : 70   # number of milliseconds between moves
-  respawnDelay  : 3000 # number of milliseconds until player can move again
+  frogsPerLevel : 3     # number of frogs required to advance to next level
+  moveDelay     : 70    # number of milliseconds between moves
+  respawnDelay  : 3000  # number of milliseconds until player can move again
+  bonusDelay    : 10000 # number of milliseconds until new bonus appears
+  vanishDelay   : 10000 # number of milliseconds until bonus vanishes
 
   constructor: (@io) ->
     @levelIndex = 0
@@ -20,6 +23,7 @@ class Game
 
     @frogCount = 0
     @spawnFrog()
+    @bonusTimer = setInterval @spawnBonus, @bonusDelay
 
     @players = []
     @playerCount = 0
@@ -27,6 +31,7 @@ class Game
 
   loadNextLevel: =>
     @pause player for player in @players
+    clearInterval @bonusTimer
 
     @levelIndex = (@levelIndex + 1) % @levels.length
     @level = new Level @levels[@levelIndex]
@@ -34,6 +39,8 @@ class Game
 
     @frogCount = 0
     @spawnFrog()
+
+    @bonusTimer = setInterval @spawnBonus, @bonusDelay
 
     @respawn player, player.getLength() for player in @players
 
@@ -93,23 +100,27 @@ class Game
 
   move: (player, theoreticalPos) =>
     newPos = @level.getActualPos theoreticalPos
+    occupant = @level.getOccupant newPos
     if @level.isWall newPos
       @respawn player
-    else if @level.getOccupant newPos
-      occupant = @level.getOccupant newPos
-      if occupant.type is 'FROG'
-        @unoccupy [newPos]
-        occupant.affect player, @getOtherPlayers(player)
-        if ++@frogCount < @frogsPerLevel
-          @spawnFrog()
-        else
-          @loadNextLevel()
-      else
-        @handleCollision player, occupant, newPos
+    else if occupant?.type is 'PLAYER'
+      @handleCollision player, occupant, newPos
     else
-      @occupy player, newPos
-      vacatedPos = player.move newPos
-      @unoccupy [vacatedPos] if vacatedPos
+      if occupant
+        @unoccupy [newPos]
+        { vacated, stay } = occupant.affect player, @getOtherPlayers(player)
+        @unoccupy vacated if vacated?.length
+        if occupant.type is 'FROG'
+          if ++@frogCount < @frogsPerLevel
+            @spawnFrog()
+          else
+            @loadNextLevel()
+        else
+          clearTimeout occupant.vanishTimer
+      unless stay
+        @occupy player, newPos
+        vacatedPos = player.move newPos
+        @unoccupy [vacatedPos] if vacatedPos
       @startAutoMove player
 
   getOtherPlayers: (player) =>
@@ -138,6 +149,13 @@ class Game
     position = @level.getRandomSpawnPos()
     { char, row, col } = @level.occupy frog, position
     @io.emit 'display', { char, row, col }
+
+  spawnBonus: =>
+    bonus = new Bonus
+    position = @level.getRandomSpawnPos()
+    { char, row, col } = @level.occupy bonus, position
+    @io.emit 'display', { char, row, col }
+    bonus.vanishTimer = setTimeout (=> @unoccupy [position]), @vanishDelay
 
   occupy: (occupant, position) =>
     { char, row, col } = @level.occupy occupant, position

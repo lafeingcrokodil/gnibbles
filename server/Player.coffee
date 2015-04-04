@@ -6,7 +6,8 @@ class Player
   segments: []
   paused: true
 
-  initialLength: 5 # initial length of snake (number of segments)
+  initialLength : 5 # initial length of snake (number of segments)
+  minimumLength : 2 # minimum length of snake (number of segments)
 
   constructor: (@name, @socket, keyListener) ->
     @keyListener = keyListener @
