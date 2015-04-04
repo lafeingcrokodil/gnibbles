@@ -12,8 +12,7 @@ app = express()
 app.set 'views', path.join(__dirname, 'views')
 app.set 'view engine', 'jade'
 
-# TODO place favicon in /public and uncomment the following line
-#app.use favicon(path.join(__dirname, 'public', 'favicon.ico'))
+app.use favicon(path.join(__dirname, 'public', 'favicon.ico'))
 app.use logger('server', 'dev')
 app.use bodyParser.json()
 app.use bodyParser.urlencoded({ extended: false })
