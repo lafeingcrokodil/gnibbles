@@ -44,7 +44,9 @@ class Game
 
     @bonusTimer = setInterval @spawnBonus, @bonusDelay
 
-    @respawn player, player.getLength(), true for player in @players
+    for player in @players
+      @respawn player, player.getLength(), true
+      @io.emit 'score', { id: player.id, score: player.score }
 
   addPlayer: (socket) =>
     id = (@playerCount++ % @maxPlayers) + 1
@@ -143,7 +145,7 @@ class Game
 
   respawn: (player, length, withoutPenalty) =>
     @pause player
-    @changeScore player, @penalty
+    @changeScore player, @penalty unless withoutPenalty
     @unoccupy player.segments
     spawnPos = @level.getRandomSpawnPos()
     player.spawn spawnPos, length
