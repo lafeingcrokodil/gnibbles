@@ -1,7 +1,6 @@
 class Screen
 
   maxPlayers: 8
-  colours: ['firebrick', 'orangered', 'orange']
 
   constructor: (canvas, @numRows, @numCols, @tileSize) ->
     @context = canvas.getContext '2d'
@@ -23,6 +22,10 @@ class Screen
     @context.fillText "#{score}", @getX(id*@scoreWidth + 1) + 3, @getY(@numRows + 1)
 
   display: (char, row, col) =>
+    if char is 'A'
+      creatures = ['G', 'B', 'T']
+      index = @getRandomInt 0, creatures.length
+      @display creatures[index], row, col
     @context.clearRect @getX(col), @getY(row-1), @tileSize, @tileSize
     offset = Math.floor @tileSize/3
     switch char
@@ -51,10 +54,7 @@ class Screen
       when 'B'
         @fillTriangle row, col, 'orange'
       when 'T'
-        @fillTriangle row, col, 'firebrick'
-      when 'A'
-        index = @getRandomInt 0, @colours.length
-        @fillTriangle row, col, @colours[index]
+        @fillUpsideDownTriangle row, col, 'firebrick'
       when '-'
         @context.strokeStyle = 'green'
         @context.beginPath()
@@ -134,6 +134,15 @@ class Screen
     @context.moveTo @getX(col) + 1, @getY(row) - 1
     @context.lineTo @getX(col) + half, @getY(row-1) + 1
     @context.lineTo @getX(col+1) - 1, @getY(row) - 1
+    @context.fill()
+
+  fillUpsideDownTriangle: (row, col, colour) =>
+    half = Math.floor @tileSize/2
+    @context.fillStyle = colour
+    @context.beginPath()
+    @context.moveTo @getX(col) + 1, @getY(row-1) + 1
+    @context.lineTo @getX(col) + half, @getY(row) - 1
+    @context.lineTo @getX(col+1) - 1, @getY(row-1) + 1
     @context.fill()
 
   getRandomInt: (min, max) ->

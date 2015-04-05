@@ -6,13 +6,12 @@
   Screen = (function() {
     Screen.prototype.maxPlayers = 8;
 
-    Screen.prototype.colours = ['firebrick', 'orangered', 'orange'];
-
     function Screen(canvas, numRows, numCols, tileSize) {
       this.numRows = numRows;
       this.numCols = numCols;
       this.tileSize = tileSize;
       this.displayLevel = bind(this.displayLevel, this);
+      this.fillUpsideDownTriangle = bind(this.fillUpsideDownTriangle, this);
       this.fillTriangle = bind(this.fillTriangle, this);
       this.fillSquare = bind(this.fillSquare, this);
       this.fillCircle = bind(this.fillCircle, this);
@@ -43,7 +42,12 @@
     };
 
     Screen.prototype.display = function(char, row, col) {
-      var index, offset;
+      var creatures, index, offset;
+      if (char === 'A') {
+        creatures = ['G', 'B', 'T'];
+        index = this.getRandomInt(0, creatures.length);
+        this.display(creatures[index], row, col);
+      }
       this.context.clearRect(this.getX(col), this.getY(row - 1), this.tileSize, this.tileSize);
       offset = Math.floor(this.tileSize / 3);
       switch (char) {
@@ -72,10 +76,7 @@
         case 'B':
           return this.fillTriangle(row, col, 'orange');
         case 'T':
-          return this.fillTriangle(row, col, 'firebrick');
-        case 'A':
-          index = this.getRandomInt(0, this.colours.length);
-          return this.fillTriangle(row, col, this.colours[index]);
+          return this.fillUpsideDownTriangle(row, col, 'firebrick');
         case '-':
           this.context.strokeStyle = 'green';
           this.context.beginPath();
@@ -164,6 +165,17 @@
       this.context.moveTo(this.getX(col) + 1, this.getY(row) - 1);
       this.context.lineTo(this.getX(col) + half, this.getY(row - 1) + 1);
       this.context.lineTo(this.getX(col + 1) - 1, this.getY(row) - 1);
+      return this.context.fill();
+    };
+
+    Screen.prototype.fillUpsideDownTriangle = function(row, col, colour) {
+      var half;
+      half = Math.floor(this.tileSize / 2);
+      this.context.fillStyle = colour;
+      this.context.beginPath();
+      this.context.moveTo(this.getX(col) + 1, this.getY(row - 1) + 1);
+      this.context.lineTo(this.getX(col) + half, this.getY(row) - 1);
+      this.context.lineTo(this.getX(col + 1) - 1, this.getY(row - 1) + 1);
       return this.context.fill();
     };
 
