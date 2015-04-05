@@ -10,8 +10,8 @@ Bonus  = require './creatures/Bonus'
 
 class Game
 
-  frogsPerLevel : 3     # number of frogs required to advance to next level
-  moveDelay     : 70    # number of milliseconds between moves
+  frogsPerLevel : 9     # number of frogs required to advance to next level
+  moveDelay     : 80    # number of milliseconds between moves
   respawnDelay  : 3000  # number of milliseconds until player can move again
   bonusDelay    : 10000 # number of milliseconds until new bonus appears
   vanishDelay   : 10000 # number of milliseconds until bonus vanishes

@@ -3,6 +3,6 @@ Frog = require './Frog'
 class Bullfrog extends Frog
 
   type: 'BULLFROG'
-  lengthBonus: 6
+  lengthBonus: 10
 
 module.exports = Bullfrog

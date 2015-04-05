@@ -2,7 +2,7 @@
 class Frog
 
   type: 'FROG'
-  lengthBonus: 3
+  lengthBonus: 5
 
   affect: (player, otherPlayers) =>
     { row, col } = player.getTailPos()

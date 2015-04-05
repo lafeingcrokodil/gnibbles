@@ -1,6 +1,6 @@
 {
   "name": "gnibbles",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Snake game based on GNOME Nibbles",
   "repository": {
     "type": "git",
@@ -36,5 +36,8 @@
   "engines": {
     "node": "0.10.x",
     "npm": "2.1.x"
+  },
+  "devDependencies": {
+    "eyes": "^0.1.8"
   }
 }
