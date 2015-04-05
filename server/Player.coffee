@@ -36,7 +36,7 @@ class Player
   move: ({ row, col }) =>
     @segments.unshift { row, col }
     lastPos = @segments.pop()
-    return lastPos if @getTailPos() isnt lastPos
+    return lastPos unless _.isEqual @getTailPos(), lastPos
 
   getLength  : => @segments.length
   getHeadPos : => @segments[0]

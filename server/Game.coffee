@@ -110,17 +110,16 @@ class Game
         @unoccupy [newPos]
         { vacated, stay } = occupant.affect player, @getOtherPlayers(player)
         @unoccupy vacated if vacated?.length
-        if occupant.type is 'FROG'
-          if ++@frogCount < @frogsPerLevel
-            @spawnFrog()
-          else
-            @loadNextLevel()
-        else
-          clearTimeout occupant.vanishTimer
+        clearTimeout occupant.vanishTimer if occupant.vanishTimer
       unless stay
         @occupy player, newPos
         vacatedPos = player.move newPos
         @unoccupy [vacatedPos] if vacatedPos
+      if occupant?.type is 'FROG'
+        if ++@frogCount < @frogsPerLevel
+          @spawnFrog()
+        else
+          @loadNextLevel()
       @startAutoMove player
 
   getOtherPlayers: (player) =>
@@ -147,23 +146,21 @@ class Game
   spawnFrog: =>
     frog = new Frog
     position = @level.getRandomSpawnPos()
-    { char, row, col } = @level.occupy frog, position
-    @io.emit 'display', { char, row, col }
+    @occupy frog, position
 
   spawnBonus: =>
     bonus = new Bonus
     position = @level.getRandomSpawnPos()
-    { char, row, col } = @level.occupy bonus, position
-    @io.emit 'display', { char, row, col }
+    @occupy bonus, position
     bonus.vanishTimer = setTimeout (=> @unoccupy [position]), @vanishDelay
 
   occupy: (occupant, position) =>
     { char, row, col } = @level.occupy occupant, position
     @io.emit 'display', { char, row, col }
-    return { row, col }
 
   unoccupy: (positions) =>
-    for position in positions
+    uniquePositions = _.uniq positions, (pos) -> "#{pos.row},#{pos.col}"
+    for position in uniquePositions
       { char } = @level.unoccupy position
       @io.emit 'display', { char, row: position.row, col: position.col }
 

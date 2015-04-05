@@ -50,7 +50,7 @@ class Level
 
   isValidSpawnPos: (row, col) =>
     terrainOK = @tiles[row][col].terrain is symbols.GROUND
-    noOccupant = not @getOccupant row, col
+    noOccupant = not @getOccupant { row, col }
     return terrainOK and noOccupant
 
   isWall: ({ row, col }) =>
