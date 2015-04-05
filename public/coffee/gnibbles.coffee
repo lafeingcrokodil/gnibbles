@@ -1,36 +1,60 @@
 class Screen
 
-  colours: ['red', 'yellow', 'purple']
+  maxPlayers: 8
+  colours: ['firebrick', 'orangered', 'orange']
 
   constructor: (canvas, @numRows, @numCols, @tileSize) ->
     @context = canvas.getContext '2d'
 
     @width = canvas.width = @numCols * @tileSize
-    @height = canvas.height = @numRows * @tileSize
+    @height = canvas.height = (@numRows + 2) * @tileSize
+
+    @scoreWidth = Math.floor @width / @maxPlayers / @tileSize
+    @context.font = '800 12px courier'
 
   getX: (col) => col * @tileSize
 
   getY: (row) => (row + 1) * @tileSize
 
+  updateScore: (id, score) =>
+    @context.clearRect @getX(id*@scoreWidth), @getY(@numRows), @scoreWidth*@tileSize, @tileSize
+    @display "#{id}", @numRows + 1, id*@scoreWidth
+    @context.fillStyle = 'green'
+    @context.fillText "#{score}", @getX(id*@scoreWidth + 1) + 3, @getY(@numRows + 1)
+
   display: (char, row, col) =>
     @context.clearRect @getX(col), @getY(row-1), @tileSize, @tileSize
     offset = Math.floor @tileSize/3
     switch char
-      when '@'
+      when '1'
         @fillCircle row, col, 'green'
+      when '2'
+        @fillCircle row, col, 'yellow'
+      when '3'
+        @fillCircle row, col, 'lime'
+      when '4'
+        @fillCircle row, col, 'saddlebrown'
+      when '5'
+        @fillCircle row, col, 'greenyellow'
+      when '6'
+        @fillCircle row, col, 'darkolivegreen'
+      when '7'
+        @fillCircle row, col, 'darkgreen'
+      when '8'
+        @fillCircle row, col, 'peru'
       when '?'
         @fillCircle row, col, 'grey'
       when '*'
         @fillSquare row, col, 'green'
       when 'G'
-        @fillCircle row, col, 'red'
+        @fillTriangle row, col, 'orangered'
       when 'B'
-        @fillCircle row, col, 'yellow'
+        @fillTriangle row, col, 'orange'
       when 'T'
-        @fillCircle row, col, 'purple'
+        @fillTriangle row, col, 'firebrick'
       when 'A'
         index = @getRandomInt 0, @colours.length
-        @fillCircle row, col, @colours[index]
+        @fillTriangle row, col, @colours[index]
       when '-'
         @context.strokeStyle = 'green'
         @context.beginPath()
@@ -103,6 +127,15 @@ class Screen
     @context.fillStyle = colour
     @context.fillRect @getX(col) + 1, @getY(row-1) + 1, @tileSize - 2, @tileSize - 2
 
+  fillTriangle: (row, col, colour) =>
+    half = Math.floor @tileSize/2
+    @context.fillStyle = colour
+    @context.beginPath()
+    @context.moveTo @getX(col) + 1, @getY(row) - 1
+    @context.lineTo @getX(col) + half, @getY(row-1) + 1
+    @context.lineTo @getX(col+1) - 1, @getY(row) - 1
+    @context.fill()
+
   getRandomInt: (min, max) ->
     Math.floor(Math.random() * (max - min)) + min
 
@@ -120,6 +153,8 @@ $(document).ready ->
     screen.displayLevel data.tiles
     socket.on 'display', ({ char, row, col }) ->
       screen.display char, row, col
+    socket.on 'score', ({ id, score }) ->
+      screen.updateScore id, score
 
   $(document).keydown (e) ->
     socket.emit 'key', e.which

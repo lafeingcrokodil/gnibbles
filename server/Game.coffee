@@ -10,11 +10,13 @@ Bonus  = require './creatures/Bonus'
 
 class Game
 
+  maxPlayers    : 8     # maximum number of players
   frogsPerLevel : 9     # number of frogs required to advance to next level
   moveDelay     : 80    # number of milliseconds between moves
   respawnDelay  : 3000  # number of milliseconds until player can move again
   bonusDelay    : 10000 # number of milliseconds until new bonus appears
   vanishDelay   : 10000 # number of milliseconds until bonus vanishes
+  penalty       : -10   # change in score upon crashing
 
   constructor: (@io) ->
     @levelIndex = 0
@@ -42,22 +44,25 @@ class Game
 
     @bonusTimer = setInterval @spawnBonus, @bonusDelay
 
-    @respawn player, player.getLength() for player in @players
+    @respawn player, player.getLength(), true for player in @players
 
   addPlayer: (socket) =>
-    newPlayer = new Player "Player #{++@playerCount}", socket, @onKey
-    debug "#{newPlayer.name} joined."
+    id = (@playerCount++ % @maxPlayers) + 1
+    newPlayer = new Player id, socket, @onKey
+    debug "Player #{newPlayer.id} joined."
 
     @players.push newPlayer
 
     socket.emit 'level', @level.getSnapshot()
-    socket.on 'disconnect', => @removePlayer newPlayer.name
+    socket.on 'disconnect', => @removePlayer newPlayer.id
 
-    @respawn newPlayer
+    @respawn newPlayer, null, true
+    @io.emit 'score', { id: newPlayer.id, score: newPlayer.score }
 
-  removePlayer: (name) =>
-    debug "#{name} left."
-    [player] = _.remove @players, 'name', name
+  removePlayer: (id) =>
+    debug "Player #{id} left."
+    [player] = _.remove @players, 'id', id
+    @pause player
     @unoccupy player.segments if player
 
   pause: (player) =>
@@ -108,8 +113,9 @@ class Game
     else
       if occupant
         @unoccupy [newPos]
-        { vacated, stay } = occupant.affect player, @getOtherPlayers(player)
+        { vacated, stay, dScore } = occupant.affect player, @getOtherPlayers(player)
         @unoccupy vacated if vacated?.length
+        @changeScore player, dScore if dScore
         clearTimeout occupant.vanishTimer if occupant.vanishTimer
       unless stay
         @occupy player, newPos
@@ -123,11 +129,11 @@ class Game
       @startAutoMove player
 
   getOtherPlayers: (player) =>
-    @players.filter (otherPlayer) -> otherPlayer.name isnt player.name
+    @players.filter (otherPlayer) -> otherPlayer.id isnt player.id
 
   handleCollision: (player, occupant, newPos) =>
-    if occupant.name isnt player.name
-      if newPos is occupant.getHeadPos() # head-on collision
+    if occupant.id isnt player.id
+      if _.isEqual newPos, occupant.getHeadPos() # head-on collision
         @respawn player
         @respawn occupant
       else
@@ -135,8 +141,9 @@ class Game
     else
       @respawn player
 
-  respawn: (player, length) =>
+  respawn: (player, length, withoutPenalty) =>
     @pause player
+    @changeScore player, @penalty
     @unoccupy player.segments
     spawnPos = @level.getRandomSpawnPos()
     player.spawn spawnPos, length
@@ -153,6 +160,10 @@ class Game
     position = @level.getRandomSpawnPos()
     @occupy bonus, position
     bonus.vanishTimer = setTimeout (=> @unoccupy [position]), @vanishDelay
+
+  changeScore: (player, dScore) =>
+    player.changeScore dScore
+    @io.emit 'score', { id: player.id, score: player.score }
 
   occupy: (occupant, position) =>
     { char, row, col } = @level.occupy occupant, position

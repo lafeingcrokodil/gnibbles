@@ -2,11 +2,12 @@
 class Frog
 
   type: 'FROG'
-  lengthBonus: 5
+  points: 5
 
   affect: (player, otherPlayers) =>
     { row, col } = player.getTailPos()
-    for i in [1..@lengthBonus]
+    for i in [1..@points]
       player.segments.push { row, col }
+    return { dScore: @points }
 
 module.exports = Frog

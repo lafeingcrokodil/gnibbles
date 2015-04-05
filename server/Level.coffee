@@ -71,6 +71,8 @@ class Level
   getSymbol: (tile) ->
     if tile.occupant?.paused
       symbols[tile.occupant.type + '_PAUSED']
+    else if tile.occupant?.type is 'PLAYER'
+      "#{tile.occupant.id}"
     else if tile.occupant
       symbols[tile.occupant.type]
     else tile.terrain

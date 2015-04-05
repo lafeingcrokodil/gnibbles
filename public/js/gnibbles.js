@@ -4,21 +4,27 @@
     bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   Screen = (function() {
-    Screen.prototype.colours = ['red', 'yellow', 'purple'];
+    Screen.prototype.maxPlayers = 8;
+
+    Screen.prototype.colours = ['firebrick', 'orangered', 'orange'];
 
     function Screen(canvas, numRows, numCols, tileSize) {
       this.numRows = numRows;
       this.numCols = numCols;
       this.tileSize = tileSize;
       this.displayLevel = bind(this.displayLevel, this);
+      this.fillTriangle = bind(this.fillTriangle, this);
       this.fillSquare = bind(this.fillSquare, this);
       this.fillCircle = bind(this.fillCircle, this);
       this.display = bind(this.display, this);
+      this.updateScore = bind(this.updateScore, this);
       this.getY = bind(this.getY, this);
       this.getX = bind(this.getX, this);
       this.context = canvas.getContext('2d');
       this.width = canvas.width = this.numCols * this.tileSize;
-      this.height = canvas.height = this.numRows * this.tileSize;
+      this.height = canvas.height = (this.numRows + 2) * this.tileSize;
+      this.scoreWidth = Math.floor(this.width / this.maxPlayers / this.tileSize);
+      this.context.font = '800 12px courier';
     }
 
     Screen.prototype.getX = function(col) {
@@ -29,26 +35,47 @@
       return (row + 1) * this.tileSize;
     };
 
+    Screen.prototype.updateScore = function(id, score) {
+      this.context.clearRect(this.getX(id * this.scoreWidth), this.getY(this.numRows), this.scoreWidth * this.tileSize, this.tileSize);
+      this.display("" + id, this.numRows + 1, id * this.scoreWidth);
+      this.context.fillStyle = 'green';
+      return this.context.fillText("" + score, this.getX(id * this.scoreWidth + 1) + 3, this.getY(this.numRows + 1));
+    };
+
     Screen.prototype.display = function(char, row, col) {
       var index, offset;
       this.context.clearRect(this.getX(col), this.getY(row - 1), this.tileSize, this.tileSize);
       offset = Math.floor(this.tileSize / 3);
       switch (char) {
-        case '@':
+        case '1':
           return this.fillCircle(row, col, 'green');
+        case '2':
+          return this.fillCircle(row, col, 'yellow');
+        case '3':
+          return this.fillCircle(row, col, 'lime');
+        case '4':
+          return this.fillCircle(row, col, 'saddlebrown');
+        case '5':
+          return this.fillCircle(row, col, 'greenyellow');
+        case '6':
+          return this.fillCircle(row, col, 'darkolivegreen');
+        case '7':
+          return this.fillCircle(row, col, 'darkgreen');
+        case '8':
+          return this.fillCircle(row, col, 'peru');
         case '?':
           return this.fillCircle(row, col, 'grey');
         case '*':
           return this.fillSquare(row, col, 'green');
         case 'G':
-          return this.fillCircle(row, col, 'red');
+          return this.fillTriangle(row, col, 'orangered');
         case 'B':
-          return this.fillCircle(row, col, 'yellow');
+          return this.fillTriangle(row, col, 'orange');
         case 'T':
-          return this.fillCircle(row, col, 'purple');
+          return this.fillTriangle(row, col, 'firebrick');
         case 'A':
           index = this.getRandomInt(0, this.colours.length);
-          return this.fillCircle(row, col, this.colours[index]);
+          return this.fillTriangle(row, col, this.colours[index]);
         case '-':
           this.context.strokeStyle = 'green';
           this.context.beginPath();
@@ -129,6 +156,17 @@
       return this.context.fillRect(this.getX(col) + 1, this.getY(row - 1) + 1, this.tileSize - 2, this.tileSize - 2);
     };
 
+    Screen.prototype.fillTriangle = function(row, col, colour) {
+      var half;
+      half = Math.floor(this.tileSize / 2);
+      this.context.fillStyle = colour;
+      this.context.beginPath();
+      this.context.moveTo(this.getX(col) + 1, this.getY(row) - 1);
+      this.context.lineTo(this.getX(col) + half, this.getY(row - 1) + 1);
+      this.context.lineTo(this.getX(col + 1) - 1, this.getY(row) - 1);
+      return this.context.fill();
+    };
+
     Screen.prototype.getRandomInt = function(min, max) {
       return Math.floor(Math.random() * (max - min)) + min;
     };
@@ -163,10 +201,15 @@
       screen = new Screen($('canvas')[0], data.numRows, data.numCols, data.tileSize);
       $('canvas').css('display', 'block');
       screen.displayLevel(data.tiles);
-      return socket.on('display', function(arg) {
+      socket.on('display', function(arg) {
         var char, col, row;
         char = arg.char, row = arg.row, col = arg.col;
         return screen.display(char, row, col);
+      });
+      return socket.on('score', function(arg) {
+        var id, score;
+        id = arg.id, score = arg.score;
+        return screen.updateScore(id, score);
       });
     });
     return $(document).keydown(function(e) {

@@ -8,6 +8,6 @@ class Gecko
     removedSegments = []
     while player.segments.length > newLength
       removedSegments.push player.segments.pop()
-    return { vacated: removedSegments }
+    return { vacated: removedSegments, dScore: removedSegments.length }
 
 module.exports = Gecko

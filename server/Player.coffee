@@ -5,12 +5,16 @@ class Player
   type: 'PLAYER'
   segments: []
   paused: true
+  score: 0
 
   initialLength : 5 # initial length of snake (number of segments)
   minimumLength : 2 # minimum length of snake (number of segments)
 
-  constructor: (@name, @socket, keyListener) ->
+  constructor: (@id, @socket, keyListener) ->
     @keyListener = keyListener @
+
+  changeScore: (dScore) =>
+    @score = Math.max 0, @score + dScore
 
   spawn: ({ row, col }, length = @initialLength) ->
     @direction = null
