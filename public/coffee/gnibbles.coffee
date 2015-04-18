@@ -25,7 +25,7 @@ class Screen
     if char is 'A'
       creatures = ['G', 'B', 'T']
       index = @getRandomInt 0, creatures.length
-      @display creatures[index], row, col
+      char = creatures[index]
     @context.clearRect @getX(col), @getY(row-1), @tileSize, @tileSize
     offset = Math.floor @tileSize/3
     switch char

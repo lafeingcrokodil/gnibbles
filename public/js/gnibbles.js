@@ -46,7 +46,7 @@
       if (char === 'A') {
         creatures = ['G', 'B', 'T'];
         index = this.getRandomInt(0, creatures.length);
-        this.display(creatures[index], row, col);
+        char = creatures[index];
       }
       this.context.clearRect(this.getX(col), this.getY(row - 1), this.tileSize, this.tileSize);
       offset = Math.floor(this.tileSize / 3);
